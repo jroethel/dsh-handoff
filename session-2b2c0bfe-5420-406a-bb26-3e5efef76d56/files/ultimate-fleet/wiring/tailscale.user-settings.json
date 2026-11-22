@@ -1,0 +1,9 @@
+{
+  "$note": "Merge BOTH keys into every machine's ~/.ultimate/settings.json (user settings). The allowlist is user-settings-only by design — project settings can enable the extension but can never change 'tailscale.allow'. Use the email of the tailnet login that opens the UI (yours). Omitting 'allow' admits only the machine's own owner login, which also works when every machine is yours.",
+  "extensions": {
+    "enable": ["tailscale"]
+  },
+  "tailscale": {
+    "allow": ["REPLACE-me-you@example.com"]
+  }
+}

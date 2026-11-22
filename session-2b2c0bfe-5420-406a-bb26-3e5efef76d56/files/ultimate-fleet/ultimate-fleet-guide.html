@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Built with Claude. No brand pack. To edit: invoke /craft-build with the design instructions again.
+       Quickdoc from session context 2026-11-19; content not reviewed. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ultimate Fleet Guide</title>
+  <style>
+    :root {
+      --ink: #1a1f24;
+      --muted: #5b6470;
+      --line: #d9dee4;
+      --panel: #f6f8fa;
+      --accent: #2b5d8a;
+      --laptop: #8a6d1f;
+      --vps: #2b5d8a;
+      --ok: #2f7d4f;
+      --warn: #9a6a1c;
+      --bad: #a33b3b;
+      --code-bg: #eef1f4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; color: var(--ink); background: #fff;
+      font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    code, pre, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.92em; }
+    code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; }
+    pre { background: var(--code-bg); padding: 0.8em 1em; border-radius: 8px; overflow-x: auto; line-height: 1.45; }
+    pre code { background: none; padding: 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    nav.rail {
+      position: sticky; top: 0; z-index: 5;
+      background: #fffde; border-bottom: 1px solid var(--line);
+      padding: 0.45em 1em; font-size: 0.82rem;
+      display: flex; gap: 0.9em; flex-wrap: wrap; justify-content: center;
+    }
+    nav.rail a { color: var(--muted); }
+    nav.rail a:hover { color: var(--accent); }
+    main { max-width: 880px; margin: 0 auto; padding: 1.2em 1.4em 4em; }
+    header.hero { padding: 2.2em 0 1em; }
+    h1 { font-size: 1.9rem; margin: 0 0 0.2em; letter-spacing: -0.01em; }
+    .sub { color: var(--muted); margin: 0; }
+    h2 { font-size: 1.25rem; margin: 2.4em 0 0.6em; padding-top: 0.5em; border-top: 1px solid var(--line); }
+    h2 .n { color: var(--muted); font-weight: 400; margin-right: 0.5em; }
+    h3 { font-size: 1.02rem; margin: 1.6em 0 0.4em; }
+    table { width: 100%; border-collapse: collapse; margin: 0.8em 0; font-size: 0.92rem; }
+    th, td { text-align: left; vertical-align: top; padding: 0.45em 0.7em; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .badge { display: inline-block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em; padding: 0.12em 0.55em; border-radius: 99px; vertical-align: 1px; }
+    .b-laptop { color: var(--laptop); background: #f4ecd7; }
+    .b-vps { color: var(--vps); background: #e2edf6; }
+    .b-both { color: var(--muted); background: #eceff2; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 0.9em 1.1em; margin: 0.9em 0; background: #fff; }
+    .card.start { background: var(--panel); }
+    .check { color: var(--ok); font-weight: 600; }
+    .ref { color: var(--muted); font-size: 0.82rem; margin-top: 0.5em; }
+    ol.steps, ul.plain { margin: 0.5em 0 0.5em 1.2em; padding: 0; }
+    ol.steps li, ul.plain li { margin: 0.3em 0; }
+    .diagram { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1em 1.2em; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem; line-height: 1.6; overflow-x: auto; white-space: pre; }
+    .ladder li { margin: 0.35em 0; }
+    footer { margin-top: 3.5em; padding-top: 1em; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.82rem; }
+    @media print { nav.rail { display: none; } body { font-size: 12px; } main { padding: 0; } }
+  </style>
+</head>
+<body>
+<nav class="rail">
+  <a href="#start">Start here</a>
+  <a href="#system">The system</a>
+  <a href="#files">The files</a>
+  <a href="#order">The order</a>
+  <a href="#dayone">Day one</a>
+  <a href="#mobile">Mobile</a>
+  <a href="#ops">Maintenance</a>
+  <a href="#later">Later</a>
+  <a href="#identity">Identity addendum</a>
+</nav>
+<main>
+<header class="hero">
+  <h1>Ultimate Fleet Guide</h1>
+  <p class="sub">The single page to come back to: what every file in the kit is, the order to do them in, and where the plain Markdown holds the canonical detail.</p>
+</header>
+
+<div class="card start" id="start">
+  <strong>How to use this page.</strong> It is the map, not the contract. The
+  <a href="INSTALL.md"><code>INSTALL.md</code></a> checkpoints and the
+  <a href="DEPLOY.md"><code>DEPLOY.md</code></a> runbook are the sources of record for commands and
+  wording; edit prose there, not here. Work the checkpoints one at a time and
+  return to the chat with <em>next</em> when a check passes.
+</div>
+
+<h2 id="system"><span class="n">1</span>The system, and why it is shaped this way</h2>
+<p>Every project is its own Ultimate process on its own pinned port. A <strong>hub</strong> is an ordinary
+project whose <a href="hub/AGENTS.md"><code>AGENTS.md</code></a> charter turns its @ultimate into the
+coordinator; spokes need nothing installed. Decisions this kit bakes in:</p>
+<ul class="plain">
+  <li><strong>Hub on the VPS.</strong> The hub's value is uptime: sweeps fire, its cache stays warm, watchdog retries land.</li>
+  <li><strong>Spokes are headless.</strong> <code>--no-open</code> everywhere; the hub's UI is the one browser tab.</li>
+  <li><strong>Laptop spokes sleep</strong> when the lid shuts. Asleep is a normal state, not an incident; the charter says so.</li>
+  <li><strong>Tailscale only.</strong> The hub is tailnet-only; that is the security model. SSH tunnels are fine for your own eyeballs, never for hub-to-spoke.</li>
+</ul>
+<div class="diagram">phone (PWA, tailnet)  and  laptop browser
+        │  https://&lt;vps&gt;:4747
+        ▼
+┌─────────────────────────── VPS (always on) ───────────────────────────┐
+│  ultimate@fleet  :4747   ← the HUB (charter, sweep skill, dashboard)  │
+│  ultimate@api    :4752   ← spoke                                      │
+└───────────────────────────────────────────────────────────────────────┘
+            ▲ remotes (Tailscale HTTPS, when awake)
+┌─────────────────────────── MacBook (laptop) ──────────────────────────┐
+│  ultimate@my-app :4751   ← spoke, asleep when the lid is shut          │
+└───────────────────────────────────────────────────────────────────────┘</div>
+<p>How the hub finds a spoke, in order (this is why spokes can be local and remote):</p>
+<ol class="steps ladder">
+  <li>Its own storage, when the project runs on the hub's machine.</li>
+  <li>Loopback: any running instance on the same machine.</li>
+  <li>The <code>remotes</code> user setting (machine → project → Tailscale URL), which this kit fills.</li>
+  <li>The cloud register, when cloud backups are on.</li>
+</ol>
+
+<h2 id="files"><span class="n">2</span>The files, and what each one is</h2>
+<p>Everything lives in the kit root (<code>~/ultimate-fleet</code> after Stage 0; today it is in the chat
+workspace). The roster, <a href="wiring/fleet.json"><code>wiring/fleet.json</code></a>, is the one file
+that names every project, machine, and port; several scripts read it.</p>
+
+<h3>Guides (Markdown, canonical)</h3>
+<table>
+  <tr><th>File</th><th>What it is</th></tr>
+  <tr><td><a href="INSTALL.md"><code>INSTALL.md</code></a></td><td>The guided install: eight checkpoints, each with machine, location, commands, and its check.</td></tr>
+  <tr><td><a href="DEPLOY.md"><code>DEPLOY.md</code></a></td><td>The operational runbook: stages 0 to 6, mobile access, maintenance table, troubleshooting.</td></tr>
+  <tr><td><a href="README.md"><code>README.md</code></a></td><td>Kit map and the decisions baked in.</td></tr>
+</table>
+
+<h3>Wiring</h3>
+<table>
+  <tr><th>File</th><th>What it is</th><th>Used on</th></tr>
+  <tr><td><a href="wiring/fleet.json"><code>wiring/fleet.json</code></a></td><td>The roster: machines, DNS names, clone paths, projects with pinned ports. The single source of truth; a copy lands in the hub repo.</td><td><span class="badge b-both">both</span></td></tr>
+  <tr><td><a href="wiring/remotes.template.json"><code>remotes.template.json</code></a></td><td>The <code>remotes</code> key to merge into the hub machine's user settings, so the hub reaches laptop spokes.</td><td><span class="badge b-vps">vps</span></td></tr>
+  <tr><td><a href="wiring/tailscale.user-settings.json"><code>tailscale.user-settings.json</code></a></td><td>Tailscale enable + allowlist shape for every machine's user settings.</td><td><span class="badge b-both">both</span></td></tr>
+</table>
+
+<h3>The hub repo (deploy as its own git repo, from <code>hub/</code>)</h3>
+<table>
+  <tr><th>File</th><th>What it is</th></tr>
+  <tr><td><a href="hub/AGENTS.md"><code>hub/AGENTS.md</code></a></td><td>The charter: hub role, roster rules, delegation etiquette, escalation. The hub's brain; edit freely, it is prose.</td></tr>
+  <tr><td><code>hub/fleet.json</code></td><td>The roster copy at the hub repo root; the fleet extension reads it there.</td></tr>
+  <tr><td><a href="hub/FIRST-PROMPT.md"><code>hub/FIRST-PROMPT.md</code></a></td><td>Day one: orient, first sweep, standing automation. Paste in order.</td></tr>
+  <tr><td><code>hub/.ultimate/settings.json</code></td><td>Enables the tailscale extension for the hub project.</td></tr>
+  <tr><td><a href="hub/.ultimate/skills/fleet-sweep/SKILL.md"><code>.ultimate/skills/fleet-sweep/SKILL.md</code></a></td><td>The standing sweep procedure: build the call list, curl each <code>status</code>, classify asleep vs down vs 403, report compact.</td></tr>
+  <tr><td><code>.ultimate/extensions/fleet/{server,web}.tsx</code></td><td>The dashboard: a server action polling every roster entry's <code>status</code>, and a right-panel tab, one row per spoke. v0 is loopback-proven shapes, not yet type-checked against the live clone; its README states the fix loop.</td></tr>
+</table>
+
+<h3>Machine managers</h3>
+<table>
+  <tr><th>File</th><th>What it is</th><th>Used on</th></tr>
+  <tr><td><a href="darwin/fleet"><code>darwin/fleet</code></a></td><td>Per-spoke launchd manager: <code>install / start / stop / restart / status / logs / open / ports / remotes</code>. One plist per spoke, pinned port, headless, restart on failure. Fills the gap in <code>pnpm setup:machine</code>, which supports one label per machine.</td><td><span class="badge b-laptop">laptop</span></td></tr>
+  <tr><td><a href="linux/provision-vps.sh"><code>linux/provision-vps.sh</code></a></td><td>One-shot VPS setup: git 2.54+, Node 26, pnpm, Chrome, Tailscale, the Ultimate clone, rendered systemd template, user settings.</td><td><span class="badge b-vps">vps</span></td></tr>
+  <tr><td><a href="linux/ultimate@.service"><code>linux/ultimate@.service</code></a></td><td>Templated user unit: one spoke per instance, <code>ultimate@&lt;name&gt;</code>, port from <code>$HOME/fleet/&lt;name&gt;.env</code>.</td><td><span class="badge b-vps">vps</span></td></tr>
+  <tr><td><a href="linux/enroll.sh"><code>linux/enroll.sh</code></a></td><td>Puts one roster project under systemd: symlink, env file, enable, linger, HTTP probe.</td><td><span class="badge b-vps">vps</span></td></tr>
+  <tr><td><a href="laptop/fleet-awake"><code>laptop/fleet-awake</code></a></td><td><code>caffeinate -is</code> wrapper for fleet-alive sessions on the MacBook.</td><td><span class="badge b-laptop">laptop</span></td></tr>
+  <tr><td><code>package.json</code></td><td>Kit plumbing only: makes <code>darwin/fleet</code> run as ESM. Never deployed.</td><td><span class="badge b-both">neither</span></td></tr>
+</table>
+
+<h2 id="order"><span class="n">3</span>The order to do them in</h2>
+<p>Do checkpoints in order; each names its machine and ends with a check. Full wording:
+<a href="INSTALL.md">INSTALL.md</a>; terse commands: <a href="DEPLOY.md">DEPLOY.md</a>.</p>
+
+<div class="card"><span class="badge b-laptop">laptop</span> <strong>0 · Fill the roster.</strong>
+  Edit <code>wiring/fleet.json</code>: paths, user names, ports, DNS names (DNS can wait).
+  <span class="check">Check:</span> no <code>REPLACE-me</code> left except unknown DNS.
+  <div class="ref">INSTALL.md checkpoint 0 · DEPLOY.md Stage 0</div></div>
+
+<div class="card"><span class="badge b-vps">vps</span> <strong>1 · Provision the VPS.</strong>
+  <code>scp -r</code> the kit up, run <code>linux/provision-vps.sh</code>, then by hand: <code>sudo tailscale up</code>,
+  operator, HTTPS certificates in the admin console, linger.
+  <span class="check">Check:</span> <code>tailscale status</code> works, <code>ultimate --help</code> works.
+  <div class="ref">INSTALL.md checkpoint 1 · DEPLOY.md Stage 1</div></div>
+
+<div class="card"><span class="badge b-vps">vps</span> <strong>2 · Deploy the hub repo.</strong>
+  <code>git init ~/fleet-work/hub</code>, copy <code>hub/</code> plus the roster, <code>enroll.sh fleet</code>,
+  open <code>https://&lt;vps&gt;:4747</code>, provider login, approve the project trust card.
+  <span class="check">Check:</span> hub answers; tailnet chip green; Extensions tab lists <code>fleet</code>.
+  <div class="ref">INSTALL.md checkpoint 2 · DEPLOY.md Stage 2</div></div>
+
+<div class="card"><span class="badge b-both">browser</span> <strong>3 · Smoke-test hub to spoke.</strong>
+  FIRST-PROMPT 1 then 2: orient, then one sweep. Laptop spokes read asleep with the lid shut; a 403 is allowlist wiring.
+  <span class="check">Check:</span> the sweep ends with a counts line and names loopback vs tailnet per spoke.
+  <div class="ref">INSTALL.md checkpoint 3 · DEPLOY.md Stage 6</div></div>
+
+<div class="card"><span class="badge b-vps">vps</span> <strong>4 · Enroll VPS spokes.</strong>
+  Clone each real project to <code>~/fleet-work/&lt;name&gt;</code>, then <code>enroll.sh &lt;name&gt;</code>.
+  <span class="check">Check:</span> each ends healthy; the Fleet panel shows green.
+  <div class="ref">INSTALL.md checkpoint 4 · DEPLOY.md Stage 3</div></div>
+
+<div class="card"><span class="badge b-laptop">laptop</span> <strong>5 · Laptop spokes.</strong>
+  <code>pnpm add -g</code> the clone (once), merge the tailscale user-settings shape,
+  <code>./darwin/fleet install && ./darwin/fleet status</code>.
+  <span class="check">Check:</span> running · api ok per spoke; <code>fleet remotes</code> prints the next step's JSON.
+  <div class="ref">INSTALL.md checkpoint 5 · DEPLOY.md Stage 4</div></div>
+
+<div class="card"><span class="badge b-vps">vps</span> <strong>6 · Wire laptop spokes into the hub.</strong>
+  Merge <code>fleet remotes</code> output into the VPS <code>~/.ultimate/settings.json</code>; it reloads live.
+  <span class="check">Check:</span> sweep shows laptop spokes asleep or healthy, no 403s.
+  <div class="ref">INSTALL.md checkpoint 6 · DEPLOY.md Stage 5</div></div>
+
+<div class="card"><span class="badge b-both">browser</span> <strong>7 · Make it standing.</strong>
+  FIRST-PROMPT 3: the 9am weekday sweep automation. Optionally ask @ultimate to review the charter and harden the panel.
+  <span class="check">Check:</span> the automation confirms its next fire time.
+  <div class="ref">INSTALL.md checkpoint 7 · DEPLOY.md Stage 6</div></div>
+
+<h2 id="dayone"><span class="n">4</span>Day one, in the hub's own words</h2>
+<ul class="plain">
+  <li><strong>Orient:</strong> read charter and roster, answer in five lines, start nothing.</li>
+  <li><strong>First sweep:</strong> follow <code>fleet-sweep</code> exactly; report which calls were loopback vs tailnet.</li>
+  <li><strong>Standing:</strong> create the Morning sweep automation, subscribe @ultimate.</li>
+</ul>
+<p class="ref">Verbatim prompts: <a href="hub/FIRST-PROMPT.md"><code>hub/FIRST-PROMPT.md</code></a></p>
+
+<h2 id="mobile"><span class="n">5</span>Mobile: Tailscale on your phone</h2>
+<p>Built in, verified path; prereqs are the tailnet app on the phone and HTTPS certificates enabled upstream.</p>
+<ul class="plain">
+  <li><strong>The whole UI as an app:</strong> the hub's <code>tailnet</code> chip shows the URL as a QR code. iPhone: Safari, Add to Home Screen, Open as Web App. Android: Chrome menu, Install app.</li>
+  <li><strong>Web Push:</strong> enable the <code>push</code> extension, then the notify bell per device. Questions arrive answerable from the notification (Reply, and Approve when answers are recommended), plus landings and failed runs.</li>
+  <li><strong>Share sheet:</strong> with the Android app installed, share links and text from any app into the hub's composer.</li>
+</ul>
+<p class="ref">Full setup: DEPLOY.md, Mobile access section</p>
+
+<h2 id="ops"><span class="n">6</span>Keeping it running</h2>
+<table>
+  <tr><th>Task</th><th>Machine</th><th>Command</th></tr>
+  <tr><td>Stop / start a laptop spoke</td><td><span class="badge b-laptop">laptop</span></td><td><code>./darwin/fleet stop|start my-app</code></td></tr>
+  <tr><td>Laptop spoke logs</td><td><span class="badge b-laptop">laptop</span></td><td><code>./darwin/fleet logs my-app</code></td></tr>
+  <tr><td>VPS spoke logs</td><td><span class="badge b-vps">vps</span></td><td><code>journalctl --user -u ultimate@&lt;name&gt; -f</code></td></tr>
+  <tr><td>Summon a spoke UI</td><td><span class="badge b-laptop">laptop</span></td><td><code>./darwin/fleet open my-app</code></td></tr>
+  <tr><td>Update Ultimate on a machine</td><td><span class="badge b-both">that machine</span></td><td><code>git pull && pnpm install</code> in the clone, restart the spoke; the supervisor swaps generations without losing runs</td></tr>
+  <tr><td>Remove a spoke</td><td><span class="badge b-both">that machine</span></td><td><code>fleet uninstall</code> / <code>systemctl --user disable --now ultimate@&lt;name&gt;</code></td></tr>
+</table>
+<table>
+  <tr><th>Symptom</th><th>Meaning</th><th>Fix</th></tr>
+  <tr><td><code>403</code> from a spoke</td><td>Hub login not in that spoke's allowlist</td><td>Add the hub machine's login to that machine's user settings, <code>tailscale.allow</code></td></tr>
+  <tr><td><code>asleep</code> while the laptop is open</td><td>Spokes not bootstrapped</td><td><code>./darwin/fleet install</code></td></tr>
+  <tr><td>Port taken, start fails</td><td>Pinned port busy</td><td><code>lsof -i :&lt;port&gt;</code>, or change the roster port</td></tr>
+  <tr><td>Fleet panel missing</td><td><code>web.tsx</code> failed to build</td><td>Extensions tab shows the build error; paste it to the hub's @ultimate to fix</td></tr>
+  <tr><td>VPS spoke not running</td><td>Unit died</td><td><code>journalctl --user -u ultimate@&lt;name&gt; -n 50</code>, restart the unit</td></tr>
+</table>
+
+<h2 id="later"><span class="n">7</span>Later, on purpose</h2>
+<ul class="plain">
+  <li><strong>Social apps (Slack, Discord, Telegram):</strong> nothing ships upstream and the hub has no public endpoint by design. The working shape, deferred: a bridge bot on the VPS using each platform's outbound-only transport, allowlisting your user IDs, talking to the hub over loopback actions; short replies to the thread, long jobs fire-and-forget with Web Push for outcomes. One small Node service and one more systemd unit when wanted.</li>
+  <li><strong>Push rules in the fleet extension:</strong> a VPS spoke going down or a sweep finding failures could call <code>PushApi.notify</code>, so the phone learns before the morning sweep.</li>
+  <li><strong>Cloud backups</strong> (off by default): per-chapter backups, and their register is the fourth lookup in the resolution chain.</li>
+</ul>
+
+<h2 id="identity"><span class="n">8</span>Addendum: the trusted-identity design, on Ultimate</h2>
+<p>The <a href="../trusted-identity-factory-brainstorm-2026-11-14.md">trusted-identity brainstorm</a>
+(2026-11-14, one directory up from this kit) designs a durable, trusted agent for DSH: durable hands,
+a Lume-style identity with soul and journals, factory templates the agent builds itself, executed
+verification, time-typed records, and a governance layer. Mapped onto Ultimate, several of its build
+items already exist: the "port" it planned is unnecessary, because Ultimate runs on and patches
+pi-durable directly. Verdicts below: <strong>native</strong> (shipped), <strong>partial</strong>
+(needs a small extension or a knob), <strong>build</strong> (new code).</p>
+
+<table>
+  <tr><th>Layer</th><th>Brainstorm item</th><th>In Ultimate</th><th>Verdict</th></tr>
+  <tr><td>Substrate</td><td>Decide-once dispatch, journaled outcomes, crash resume, the mandated fault suite</td>
+      <td>Pi Durable commits everything to SQLite before display; runs resume from the last checkpoint; side effects are at-least-once tasks with idempotency keys; the decide-once claims are enforced by lint (<code>replay-safe-by-name</code>, <code>no-unowned-work</code>) and tested against a faux provider</td>
+      <td><strong>native</strong></td></tr>
+  <tr><td>Identity</td><td>Home: soul, journals, memory graph</td>
+      <td>Journals are the committed conversation stream and abstracts; memory is <code>lineage.memory</code> (slugged, sourced); soul and narrative want one small extension or just the charter</td>
+      <td><strong>partial</strong></td></tr>
+  <tr><td>Identity</td><td>Wake cadence and ritual, choosing-again on commitments</td>
+      <td>Automations wake @ultimate on a heartbeat or schedule; the dream's memory pass prunes what no longer earns its place; memory review branches fact-check with evidence</td>
+      <td><strong>native</strong></td></tr>
+  <tr><td>Time</td><td>Gap time as a generated wake line</td>
+      <td>Shipped: the "Meanwhile in #R's tree" catch-up note, computed from the journal against a seen-baseline</td>
+      <td><strong>native</strong></td></tr>
+  <tr><td>Time</td><td>Substrate eras, as-of reads</td>
+      <td>Dream chapters: one SQLite database per era, seeded with memories and a handover; closed chapters stay readable read-only through codemode</td>
+      <td><strong>native</strong></td></tr>
+  <tr><td>Time</td><td>Volatility, valid time, business time on verdict rows</td>
+      <td>Belongs to the ledger extension below</td>
+      <td><strong>build</strong></td></tr>
+  <tr><td>Identity</td><td>Recall, needs, decay</td>
+      <td>The <code>recall</code> extension exists (classify-scored re-injection); mnemodyne-style charge and decay are approximated by dream pruning</td>
+      <td><strong>partial</strong></td></tr>
+  <tr><td>Identity</td><td>Mira, the sibling with its own memory</td>
+      <td>The fleet: separate project homes are separate databases (the boundary is structural), <code>instance.model</code> pins a different provider, <code>tell</code> and pull requests are the peer channel</td>
+      <td><strong>native</strong></td></tr>
+  <tr><td>Execution</td><td>Factory template = the spec compiled</td>
+      <td>A project's <code>.ultimate/</code> folder: extensions, skills, agents, automations, committed with the repo; goes live while you talk</td>
+      <td><strong>native</strong></td></tr>
+  <tr><td>Execution</td><td>Hands in the workshop, never in production</td>
+      <td>Instance previews: clean home, own model, and pushes rewritten to a dead transport; production is touched only by landed tooling</td>
+      <td><strong>native</strong></td></tr>
+  <tr><td>Execution</td><td>Credentials attach to tools, not sessions</td>
+      <td>The Secrets panel with <code>${NAME}</code> interpolation; <code>userActions</code> reserve sensitive actions for the UI</td>
+      <td><strong>native</strong></td></tr>
+  <tr><td>Verification</td><td>Exit 0 is the only thing believed</td>
+      <td><code>lander.checks</code> gates landings on executed checks, per project; unset by default, which is the knob</td>
+      <td><strong>native</strong> (knob)</td></tr>
+  <tr><td>Verification</td><td>Baseline, verdict rows, promotion ladder per lane</td>
+      <td><code>host.trace</code> already records every call and outcome, and durable events hold the rest; the scoreboard with valid windows and baselines is a small ledger extension</td>
+      <td><strong>build</strong></td></tr>
+  <tr><td>Governance</td><td>Zero-touch runtime; digest as trust maintenance</td>
+      <td>Checks gate landings, reviewer agents review, watchdog retries and reports; push notifications carry Reply and Approve; the weekly five-minute report is one automation</td>
+      <td><strong>native</strong></td></tr>
+  <tr><td>Governance</td><td>Constitution, tamper evidence, mutual auth</td>
+      <td>The honest inversion: Ultimate is weaker than DSH here (no file policy or approval presets; a charter is an instruction, not a lock). A constitution extension would hash-pin soul, charter and settings, verify at open, and place tamper notes; signed <code>.ultimate/</code> commits anchor it externally. Webhook triggers stay a gap; an extension action behind Tailscale identity is the bridge</td>
+      <td><strong>build</strong></td></tr>
+  <tr><td>Governance</td><td>Budgets, revocation ladder, dead-man</td>
+      <td><code>pause</code> is the freeze button; conclude and automation pause revoke; spend shows in the status line; hard ceilings want a budget extension reading the usage document</td>
+      <td><strong>partial</strong></td></tr>
+</table>
+
+<div class="card">
+<strong>What to build</strong> (three small extensions, everything else is prose):
+<ul class="plain">
+  <li><strong>identity/constitution:</strong> soul and narrative as durable documents, injected as a stable prompt section; hash pins over soul, charter and settings, verified at open.</li>
+  <li><strong>ledger:</strong> verdict rows (model, task type, first-try vs rescued) with valid windows and baselines, over the trace and event streams the harness already keeps.</li>
+  <li><strong>triggers:</strong> authenticated inbound webhooks over an extension action admitted by Tailscale identity, dispatching like an automation fire.</li>
+</ul>
+</div>
+
+<p><strong>The one-afternoon MVP, translated.</strong> It gets smaller here: create the project, onboard
+(writes the first memories), write the charter, add the soul section, one automation waking @ultimate with
+the choose-again prompt, <code>lander.checks</code> left empty at first so everything is reported (staged
+autonomy). Chapters and dream give consolidation and compounding for free. Two weeks of real work answers
+the brainstorm's testable question, optionally with the DSH resident as the control.</p>
+
+<footer>
+  Sources of record: INSTALL.md, DEPLOY.md, README.md, and the repo docs in the Ultimate clone
+  (README "One Ultimate or many", docs/running.md, extensions/). The addendum maps
+  <a href="../trusted-identity-factory-brainstorm-2026-11-14.md">trusted-identity-factory-brainstorm-2026-11-14.md</a>
+  (workspace root) onto this kit. Built with Claude, quickdoc from
+  session context, 2026-11-19; content not reviewed. The kit was written against Ultimate's
+  shipped extension shapes; where the clone disagrees, the clone wins and the hub's @ultimate
+  updates the kit.
+</footer>
+</main>
+</body>
+</html>

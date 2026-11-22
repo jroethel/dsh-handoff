@@ -1,0 +1,6 @@
+{
+  "name": "ultimate-fleet-kit",
+  "private": true,
+  "type": "module",
+  "$note": "Exists only so darwin/fleet runs as an ES module. Never deployed anywhere; the hub repo is the hub/ subdirectory alone."
+}

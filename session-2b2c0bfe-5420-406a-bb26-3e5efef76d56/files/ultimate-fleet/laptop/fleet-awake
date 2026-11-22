@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# fleet-awake — keep this MacBook awake while the fleet should stay alive.
+#
+# Wraps caffeinate: -i prevents idle sleep, -s prevents system sleep on AC
+# (lid-open; a shut lid still sleeps unless clamshell mode has power + display).
+#
+# Usage:
+#   fleet-awake              hold awake for 4 hours (FLEET_AWAKE_SECONDS to change)
+#   fleet-awake <command…>   hold awake while <command> runs
+#
+# Stop early with Ctrl-C. Check state anytime: pmset -g assertions | grep -i caffeinate
+set -euo pipefail
+
+if [[ $# -gt 0 ]]; then
+  exec caffeinate -is "$@"
+else
+  SECONDS_TO_HOLD="${FLEET_AWAKE_SECONDS:-14400}"
+  echo "fleet awake for $((SECONDS_TO_HOLD / 3600))h $(((SECONDS_TO_HOLD % 3600) / 60))m — Ctrl-C to release"
+  exec caffeinate -is -t "$SECONDS_TO_HOLD"
+fi

@@ -1,0 +1,8 @@
+{
+  "$note": "Merge the 'remotes' key into the HUB machine's ~/.ultimate/settings.json (user settings, not project). One entry per (machine, project) the hub must reach that is NOT on the hub's own machine — local spokes are found over loopback without this. URLs are the Tailscale Serve HTTPS addresses the tailscale extension publishes; port matches the pinned port in fleet.json.",
+  "remotes": {
+    "laptop": {
+      "my-app": "https://REPLACE-me-macbook.tail1234.ts.net:4751"
+    }
+  }
+}

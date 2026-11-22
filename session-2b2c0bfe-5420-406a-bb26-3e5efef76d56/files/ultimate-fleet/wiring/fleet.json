@@ -1,0 +1,42 @@
+{
+  "$note": "The fleet roster: the single source of truth. Edit this file, then copy it to the hub repo root as fleet.json. Replace every REPLACE-me value. 'machines.<name>.dns' must be the machine's Tailscale DNS name (tailscale status --json | jq .Self.DNSName, minus the trailing dot). Ports are pinned so URLs are stable; keep each port unique per machine.",
+  "hub": {
+    "machine": "vps",
+    "project": "fleet"
+  },
+  "machines": {
+    "laptop": {
+      "dns": "REPLACE-me-macbook.tail1234.ts.net",
+      "clone": "/Users/jjrdar/repos/ultimate",
+      "kind": "macOS laptop; asleep when the lid is shut"
+    },
+    "vps": {
+      "dns": "REPLACE-me-vps.tail1234.ts.net",
+      "clone": "/home/REPLACE-me-user/ultimate",
+      "kind": "Ubuntu VPS; always on"
+    }
+  },
+  "projects": [
+    {
+      "name": "my-app",
+      "machine": "laptop",
+      "path": "/Users/jjrdar/Projects/my-app",
+      "port": 4751,
+      "kind": "web app; awake only while the laptop is"
+    },
+    {
+      "name": "api",
+      "machine": "vps",
+      "path": "/home/REPLACE-me-user/fleet-work/api",
+      "port": 4752,
+      "kind": "service"
+    },
+    {
+      "name": "fleet",
+      "machine": "vps",
+      "path": "/home/REPLACE-me-user/fleet-work/hub",
+      "port": 4747,
+      "kind": "the hub itself"
+    }
+  ]
+}

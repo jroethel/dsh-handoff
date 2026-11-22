@@ -1,0 +1,265 @@
+#!/usr/bin/env node
+/**
+ * fleet — per-spoke launchd manager for Ultimate on macOS.
+ *
+ * The repo's `pnpm setup:machine` supports exactly one fixed label per machine
+ * (com.ultimate.app); this script fills the gap for a fleet: one plist per
+ * spoke, distinct labels, pinned ports, headless (ULTIMATE_NO_OPEN=1),
+ * restart-on-failure, logs under ~/Library/Logs/ultimate/.
+ *
+ * Usage (run from anywhere; the roster is <kit>/wiring/fleet.json):
+ *   fleet install [name ...]      render + bootstrap plists (default: all laptop entries)
+ *   fleet uninstall [name ...]    bootout + remove plists
+ *   fleet start|stop|restart [name ...]
+ *   fleet status                  launchctl state + HTTP probe per spoke
+ *   fleet logs <name>             tail a spoke's log
+ *   fleet ports                   print name → port → URL
+ *   fleet open <name>             open the spoke's UI in a Chrome app window
+ *   fleet remotes                 print the remotes JSON for the HUB machine's user settings
+ *
+ * Options: --machine <name>  which roster machine this is (default: laptop on
+ * darwin, vps on linux). Prereqs: `ultimate` installed globally from the clone
+ * (`pnpm add -g <clone>`), Node on PATH (the script uses its own runtime).
+ */
+
+import { execSync, spawnSync } from 'node:child_process'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+
+const KIT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const ROSTER = join(KIT, 'wiring', 'fleet.json')
+
+function die(message) {
+  console.error(`fleet: ${message}`)
+  process.exit(1)
+}
+
+function xml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;')
+}
+
+function fileURLToPath(url) {
+  return new URL(url).pathname
+}
+
+let roster
+try {
+  roster = JSON.parse(readFileSync(ROSTER, 'utf8'))
+} catch (error) {
+  die(`cannot read ${ROSTER}: ${error.message}`)
+}
+
+const args = process.argv.slice(2)
+const machineFlag = args.indexOf('--machine')
+const localMachine =
+  machineFlag >= 0 ? args[machineFlag + 1] : process.platform === 'darwin' ? 'laptop' : 'vps'
+const command = args.find((value, index) => index !== machineFlag && index !== machineFlag + 1) ?? 'status'
+
+const machine = roster.machines?.[localMachine]
+if (machine?.clone === undefined || machine.clone.includes('REPLACE-me')) {
+  die(`set machines.${localMachine}.clone in ${ROSTER} first (the Ultimate clone on this machine)`)
+}
+if (!existsSync(machine.clone)) die(`clone not found at ${machine.clone}`)
+
+const projects = (roster.projects ?? []).filter((project) => project.machine === localMachine)
+const entry = (name) => projects.find((project) => project.name === name)
+
+function select(names) {
+  if (names.length === 0) return projects
+  const picked = names.map((name) => entry(name))
+  if (picked.some((project) => project === undefined)) {
+    die(`unknown project for machine ${localMachine}; known: ${projects.map((p) => p.name).join(', ') || 'none'}`)
+  }
+  return picked
+}
+
+const uid = typeof process.getuid === 'function' ? process.getuid() : Number(execSync('id -u').toString().trim())
+const domain = `gui/${uid}`
+const labelOf = (name) => `com.ultimate.fleet.${name}`
+const logDir = join(process.env.HOME, 'Library', 'Logs', 'ultimate')
+const agentsDir = join(process.env.HOME, 'Library', 'LaunchAgents')
+const nodePath = process.execPath
+const pathEnv = [dirname(nodePath), '/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin'].join(':')
+
+function renderPlist(project) {
+  const label = labelOf(project.name)
+  const log = join(logDir, `${label}.log`)
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
+    '<plist version="1.0">',
+    '<dict>',
+    `  <key>Label</key><string>${xml(label)}</string>`,
+    `  <key>WorkingDirectory</key><string>${xml(project.path)}</string>`,
+    '  <key>ProgramArguments</key>',
+    '  <array>',
+    `    <string>${xml(nodePath)}</string>`,
+    `    <string>${xml(join(machine.clone, 'bin', 'ultimate.ts'))}</string>`,
+    '    <string>--port</string>',
+    `    <string>${xml(String(project.port))}</string>`,
+    '    <string>--no-open</string>',
+    '  </array>',
+    '  <key>EnvironmentVariables</key>',
+    '  <dict>',
+    `    <key>PATH</key><string>${xml(pathEnv)}</string>`,
+    '    <key>ULTIMATE_NO_OPEN</key><string>1</string>',
+    '  </dict>',
+    '  <key>RunAtLoad</key><true/>',
+    '  <key>KeepAlive</key>',
+    '  <dict>',
+    '    <key>SuccessfulExit</key><false/>',
+    '  </dict>',
+    '  <key>ThrottleInterval</key><integer>5</integer>',
+    `  <key>StandardOutPath</key><string>${xml(log)}</string>`,
+    `  <key>StandardErrorPath</key><string>${xml(log)}</string>`,
+    '</dict>',
+    '</plist>',
+    '',
+  ].join('\n')
+}
+
+function launchctl(args_) {
+  const result = spawnSync('launchctl', args_, { stdio: 'pipe', encoding: 'utf8' })
+  return { code: result.status ?? 1, out: (result.stdout ?? '') + (result.stderr ?? '') }
+}
+
+function loaded(name) {
+  return launchctl(['print', `${domain}/${labelOf(name)}`]).code === 0
+}
+
+function bootout(name) {
+  if (loaded(name)) launchctl(['bootout', `${domain}/${labelOf(name)}`])
+}
+
+function install(names) {
+  mkdirSync(logDir, { recursive: true })
+  for (const project of select(names)) {
+    if (!existsSync(project.path)) {
+      console.log(`${project.name}: skipped, path missing (${project.path})`)
+      continue
+    }
+    const label = labelOf(project.name)
+    const file = join(agentsDir, `${label}.plist`)
+    const content = renderPlist(project)
+    const current = existsSync(file) ? readFileSync(file, 'utf8') : undefined
+    const wasRunning = process.env.XPC_SERVICE_NAME === label || process.env.ULTIMATE_SUPERVISED === '1'
+    if (current === content) {
+      if (!loaded(project.name)) launchctl(['bootstrap', domain, file])
+      console.log(`${project.name}: unchanged ${loaded(project.name) ? '· running' : ''}`)
+      continue
+    }
+    mkdirSync(agentsDir, { recursive: true })
+    writeFileSync(file, content)
+    if (wasRunning && current !== undefined) {
+      console.log(`${project.name}: plist changed — restart it yourself (this process runs under its label)`)
+      continue
+    }
+    bootout(project.name)
+    const result = launchctl(['bootstrap', domain, file])
+    console.log(`${project.name}: ${result.code === 0 ? 'installed and started' : `bootstrap failed: ${result.out.trim()}`}`)
+  }
+}
+
+function uninstall(names) {
+  for (const project of select(names)) {
+    bootout(project.name)
+    const file = join(agentsDir, `${labelOf(project.name)}.plist`)
+    if (existsSync(file)) rmSync(file)
+    console.log(`${project.name}: removed (log kept at ${join(logDir, labelOf(project.name) + '.log')})`)
+  }
+}
+
+function start(names) {
+  for (const project of select(names)) {
+    bootout(project.name)
+    const result = launchctl(['bootstrap', domain, join(agentsDir, `${labelOf(project.name)}.plist`)])
+    console.log(`${project.name}: ${result.code === 0 ? 'started' : `failed: ${result.out.trim()}`}`)
+  }
+}
+
+function stop(names) {
+  for (const project of select(names)) {
+    bootout(project.name)
+    console.log(`${project.name}: stopped (plist kept; fleet start to run again)`)
+  }
+}
+
+function restart(names) {
+  stop(names)
+  start(names)
+}
+
+function probe(port) {
+  const result = spawnSync(
+    'curl',
+    ['-m', '2', '-s', '-o', '/dev/null', '-w', '%{http_code}', '-X', 'POST',
+      `http://127.0.0.1:${port}/api/extensions/status/actions/status`,
+      '-H', 'Content-Type: application/json', '-d', '{"args": {}}'],
+    { stdio: 'pipe', encoding: 'utf8' },
+  )
+  return (result.stdout ?? '').trim()
+}
+
+function status() {
+  for (const project of projects) {
+    const stateResult = launchctl(['print', `${domain}/${labelOf(project.name)}`])
+    const state = stateResult.code === 0
+      ? (stateResult.out.match(/state = (\S+)/)?.[1] ?? 'loaded')
+      : 'not loaded'
+    const http = state === 'running' ? ` · api ${probe(project.port) === '200' ? 'ok' : 'no answer'}` : ''
+    console.log(`${project.name.padEnd(16)} ${state.padEnd(12)} port ${project.port}${http}`)
+  }
+}
+
+function logs(name) {
+  const project = entry(name) ?? die(`unknown project ${name} for ${localMachine}`)
+  const log = join(logDir, `${labelOf(project.name)}.log`)
+  if (!existsSync(log)) die(`no log yet at ${log}`)
+  spawnSync('tail', ['-n', '60', '-f', log], { stdio: 'inherit' })
+}
+
+function ports() {
+  for (const project of projects) {
+    const dns = machine.dns && !machine.dns.includes('REPLACE-me') ? machine.dns : '<machine dns>'
+    console.log(`${project.name.padEnd(16)} ${String(project.port).padEnd(6)} http://127.0.0.1:${project.port}  https://${dns}:${project.port}`)
+  }
+}
+
+function open(name) {
+  const project = entry(name) ?? die(`unknown project ${name} for ${localMachine}`)
+  spawnSync('open', ['-a', 'Google Chrome', '--app', `http://ultimate.localhost:${project.port}`], { stdio: 'inherit' })
+}
+
+function remotes() {
+  const others = (roster.projects ?? []).filter((project) => project.machine !== localMachine)
+  const byMachine = {}
+  for (const project of others) {
+    const dns = roster.machines?.[project.machine]?.dns
+    if (dns === undefined || dns.includes('REPLACE-me') || project.port === undefined) continue
+    ;(byMachine[project.machine] ??= {})[project.name] = `https://${dns}:${project.port}`
+  }
+  console.log('Merge into the HUB machine user settings ~/.ultimate/settings.json (this machine is the hub only if fleet.json says so):')
+  console.log(JSON.stringify({ remotes: byMachine }, null, 2))
+}
+
+const names = args.filter((value, index) =>
+  value !== command && index !== machineFlag && index !== machineFlag + 1 && value !== '--machine' && value !== args[machineFlag + 1])
+
+switch (command) {
+  case 'install': install(names); break
+  case 'uninstall': uninstall(names); break
+  case 'start': start(names); break
+  case 'stop': stop(names); break
+  case 'restart': restart(names); break
+  case 'status': status(); break
+  case 'logs': logs(names[0]); break
+  case 'ports': ports(); break
+  case 'open': open(names[0]); break
+  case 'remotes': remotes(); break
+  default: die(`unknown command "${command}"`)
+}

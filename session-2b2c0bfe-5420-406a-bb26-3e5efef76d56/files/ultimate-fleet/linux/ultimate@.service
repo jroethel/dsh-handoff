@@ -1,0 +1,27 @@
+[Unit]
+# Rendered by provision-vps.sh (it fills __ULTIMATE_CLONE__ and the PATH),
+# installed as ~/.config/systemd/user/ultimate@.service.
+# One instance per project: systemctl --user enable --now ultimate@<name>
+# requires $HOME/fleet/<name> (the project dir, usually a symlink) and
+# optionally $HOME/fleet/<name>.env with ULTIMATE_PORT=<port>.
+Description=Ultimate (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/fleet/%i
+EnvironmentFile=-%h/fleet/%i.env
+Environment=PATH=__ULTIMATE_PATH__
+Environment=ULTIMATE_NO_OPEN=1
+ExecStart=__ULTIMATE_NODE__ __ULTIMATE_CLONE__/bin/ultimate.ts --no-open
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGTERM
+KillMode=mixed
+Delegate=yes
+DelegateSubgroup=core
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target
